@@ -18,29 +18,74 @@
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body {
     width:100%; height:100%; overflow:hidden;
-    background:#0a0a0a; color:#f5f5f0;
+    background:#05060d; color:#f5f5f0;
     font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
     user-select:none; -webkit-user-select:none;
   }
   #app { width:100vw; height:100vh; position:relative; }
 
+  /* ---------- 宇宙背景 ---------- */
+  #space {
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 38%, rgba(40,70,130,0.35) 0%, rgba(20,30,70,0.15) 35%, rgba(5,6,13,0) 70%),
+      radial-gradient(ellipse at 50% 100%, rgba(60,40,110,0.25) 0%, rgba(5,6,13,0) 60%),
+      #05060d;
+  }
+  .stars { position:absolute; inset:0; }
+  .star {
+    position:absolute; border-radius:50%; background:#fff;
+    animation:twinkle var(--dur) ease-in-out infinite var(--delay);
+  }
+  @keyframes twinkle {
+    0%,100% { opacity:var(--min); transform:scale(1); }
+    50%     { opacity:var(--max); transform:scale(1.4); }
+  }
+  /* 中身はすべて背景の上に */
+  #home, #viewer { position:relative; z-index:1; }
+
   /* ---------- ホーム ---------- */
   #home {
     height:100%; display:flex; flex-direction:column;
-    justify-content:center; padding:8vh 6vw; gap:5vh;
+    justify-content:center; padding:6vh 6vw; gap:2vh;
+  }
+  #home .eyebrow {
+    text-align:center; font-size:clamp(10px,1.1vw,13px); font-weight:400;
+    letter-spacing:0.5em; color:#7fa8e0; opacity:0.85; margin-bottom:1.2vh;
+    padding-left:0.5em;
   }
   #home h1 {
     font-size:clamp(20px,3vw,34px); font-weight:300;
-    letter-spacing:0.18em; text-align:center; opacity:0.9;
+    letter-spacing:0.18em; text-align:center;
+    background:linear-gradient(180deg, #ffffff 0%, #cfe0ff 60%, #9bb8e8 100%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+    text-shadow:0 0 28px rgba(120,160,230,0.35);
+    display:flex; align-items:center; justify-content:center; gap:24px;
+  }
+  #home h1::before, #home h1::after {
+    content:""; height:1px; width:clamp(24px,5vw,70px);
+    background:linear-gradient(90deg, transparent, rgba(150,180,235,0.7), transparent);
+    -webkit-text-fill-color:initial;
+  }
+  #home .sub {
+    text-align:center; font-size:clamp(13px,1.5vw,18px); font-weight:300;
+    letter-spacing:0.25em; opacity:0.5; margin-bottom:2vh;
   }
   .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3vw; }
   .card {
-    position:relative; border-radius:18px; overflow:hidden;
+    position:relative; border-radius:0; overflow:hidden;
     background:#161616; cursor:pointer; aspect-ratio:2/3;
     box-shadow:0 8px 40px rgba(0,0,0,0.5);
     transition:transform .25s ease, box-shadow .25s ease;
+    opacity:0;
+    animation:appear .7s ease forwards, float 4s ease-in-out infinite;
   }
-  .card:active { transform:scale(0.97); }
+  /* 順番に出現＋浮遊のタイミングをずらす */
+  .card:nth-child(1){ animation-delay:.1s, .7s; }
+  .card:nth-child(2){ animation-delay:.25s, 1.4s; }
+  .card:nth-child(3){ animation-delay:.4s, 2.1s; }
+  .card:active { transform:scale(0.97) !important; animation-play-state:paused; }
   .card img { width:100%; height:100%; object-fit:cover; display:block; opacity:0.85; }
   .card .label {
     position:absolute; left:0; right:0; bottom:0;
@@ -52,6 +97,37 @@
     position:absolute; inset:0; display:flex; align-items:center;
     justify-content:center; color:#444; font-size:14px; letter-spacing:0.2em;
   }
+  /* 「読む ▸」バッジ */
+  .card .badge {
+    position:absolute; top:14px; right:14px; z-index:3;
+    padding:7px 14px; border-radius:20px;
+    background:rgba(255,255,255,0.92); color:#111;
+    font-size:clamp(12px,1.3vw,15px); font-weight:600; letter-spacing:0.08em;
+    display:flex; align-items:center; gap:4px;
+    overflow:hidden;
+  }
+  /* バッジを光が走る */
+  .card .badge::after {
+    content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.9), transparent);
+    animation:shine 3s ease-in-out infinite;
+  }
+  @keyframes appear {
+    from { opacity:0; transform:translateY(30px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes float {
+    0%,100% { transform:translateY(0); }
+    50%     { transform:translateY(-12px); }
+  }
+  @keyframes shine {
+    0%, 60% { left:-60%; }
+    100%    { left:130%; }
+  }
+  /* 操作ヒント（指＋テキスト） */
+  #hint {
+    display:none;
+  }
 
   /* ---------- ビューワー ---------- */
   #viewer {
@@ -60,6 +136,7 @@
     touch-action:none; overscroll-behavior:none;
   }
   #viewer.on { display:flex; }
+  body:has(#viewer.on) .star { animation-play-state:paused; }
   #page { max-width:100%; max-height:100%; object-fit:contain; display:block; pointer-events:none; }
 
   .tapzone { position:absolute; top:0; bottom:0; width:35%; z-index:5; }
@@ -82,12 +159,22 @@
     font-size:14px; letter-spacing:0.2em; color:rgba(255,255,255,0.55);
     background:rgba(0,0,0,0.4); padding:6px 16px; border-radius:20px;
   }
+  #vhint {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:11;
+    color:#fff; font-size:clamp(14px,1.8vw,20px); letter-spacing:0.15em;
+    background:rgba(0,0,0,0.55); padding:14px 26px; border-radius:30px;
+    pointer-events:none; opacity:0; transition:opacity .4s;
+  }
+  #vhint.show { opacity:1; }
 </style>
 </head>
 <body>
 <div id="app">
+  <div id="space"><div class="stars" id="stars"></div></div>
   <div id="home">
+    <p class="eyebrow">EXHIBITION</p>
     <h1>ムーンショット目標を起点としたSFショート漫画</h1>
+    <p class="sub">3作品を公開中 — 読みたい作品をタップ</p>
     <div class="grid" id="grid"></div>
   </div>
 
@@ -97,6 +184,7 @@
     <div class="tapzone" id="tapL"></div>
     <div class="tapzone" id="tapR"></div>
     <div id="counter"></div>
+    <div id="vhint">← スワイプ・画面タップでめくる →</div>
   </div>
 </div>
 
@@ -115,6 +203,28 @@ const EXT = "jpg"; // 画像の拡張子
 const pad = n => String(n).padStart(2, "0");
 const src = (m, p) => `images/${m.folder}:${pad(p)}.${EXT}`;
 
+// ----- 星空生成 -----
+(function makeStars(){
+  const box = document.getElementById("stars");
+  const N = 90;
+  let html = "";
+  for (let i = 0; i < N; i++) {
+    const size = (Math.random() * 2 + 0.5).toFixed(2);   // 0.5〜2.5px
+    const x = (Math.random() * 100).toFixed(2);
+    const y = (Math.random() * 100).toFixed(2);
+    const dur = (Math.random() * 3 + 2).toFixed(2);       // 2〜5s
+    const delay = (Math.random() * 5).toFixed(2);
+    const min = (Math.random() * 0.2 + 0.1).toFixed(2);   // 0.1〜0.3
+    const max = (Math.random() * 0.4 + 0.6).toFixed(2);   // 0.6〜1.0
+    const blue = Math.random() < 0.3;                     // 一部を青みに
+    html += `<span class="star" style="width:${size}px;height:${size}px;left:${x}%;top:${y}%;`
+          + `--dur:${dur}s;--delay:${delay}s;--min:${min};--max:${max};`
+          + (blue ? `background:#bcd4ff;box-shadow:0 0 4px #9bb8e8;` : `box-shadow:0 0 3px rgba(255,255,255,0.6);`)
+          + `"></span>`;
+  }
+  box.innerHTML = html;
+})();
+
 // ----- ホーム生成 -----
 const grid = document.getElementById("grid");
 MANGA.forEach((m, i) => {
@@ -123,6 +233,7 @@ MANGA.forEach((m, i) => {
   card.innerHTML = `
     <div class="ph">NO IMAGE</div>
     <img src="${src(m,1)}" alt="${m.title}" onerror="this.style.display='none'">
+    <div class="badge">読む ▸</div>
     <div class="label">${m.title}</div>`;
   card.addEventListener("click", () => open(i));
   grid.appendChild(card);
@@ -140,23 +251,56 @@ function render() {
   pageImg.src = src(m, idx + 1);
   counter.textContent = `${idx + 1} / ${m.pages}`;
 }
+// ----- 効果音（Web Audioで生成・オフライン対応） -----
+let actx = null;
+function playOpenSound() {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+    const t = actx.currentTime;
+    // 軽やかな上昇する2音
+    [880, 1320].forEach((freq, i) => {
+      const o = actx.createOscillator();
+      const g = actx.createGain();
+      o.type = "sine";
+      o.frequency.value = freq;
+      o.connect(g); g.connect(actx.destination);
+      const s = t + i * 0.08;
+      g.gain.setValueAtTime(0, s);
+      g.gain.linearRampToValueAtTime(0.25, s + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, s + 0.18);
+      o.start(s); o.stop(s + 0.2);
+    });
+  } catch (e) {}
+}
+
 function open(i) {
+  playOpenSound();
   cur = i; idx = 0;
   // プリロード
   MANGA[i].pages > 1 && (new Image().src = src(MANGA[i], 2));
   viewer.classList.add("on");
   homeEl.style.display = "none";
   render();
+  // 初回操作ガイドを2.5秒表示
+  const vh = document.getElementById("vhint");
+  vh.classList.add("show");
+  clearTimeout(window._vt);
+  window._vt = setTimeout(() => vh.classList.remove("show"), 2500);
 }
 function close() {
   viewer.classList.remove("on");
   homeEl.style.display = "flex";
 }
 function next() {
+  document.getElementById("vhint").classList.remove("show");
   if (idx < MANGA[cur].pages - 1) { idx++; render();
     idx + 1 < MANGA[cur].pages && (new Image().src = src(MANGA[cur], idx + 2)); }
 }
-function prev() { if (idx > 0) { idx--; render(); } }
+function prev() {
+  document.getElementById("vhint").classList.remove("show");
+  if (idx > 0) { idx--; render(); }
+}
 
 document.getElementById("back").addEventListener("click", close);
 document.getElementById("tapL").addEventListener("click", next);
