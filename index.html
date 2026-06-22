@@ -57,9 +57,10 @@
   #viewer {
     position:absolute; inset:0; background:#000;
     display:none; align-items:center; justify-content:center;
+    touch-action:none; overscroll-behavior:none;
   }
   #viewer.on { display:flex; }
-  #page { max-width:100%; max-height:100%; object-fit:contain; display:block; }
+  #page { max-width:100%; max-height:100%; object-fit:contain; display:block; pointer-events:none; }
 
   .tapzone { position:absolute; top:0; bottom:0; width:35%; z-index:5; }
   #tapL { left:0; } #tapR { right:0; }
@@ -163,12 +164,13 @@ document.getElementById("tapR").addEventListener("click", prev);
 
 // スワイプ
 let sx = 0, sy = 0;
-viewer.addEventListener("touchstart", e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
+viewer.addEventListener("touchstart", e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:false});
+viewer.addEventListener("touchmove", e => { e.preventDefault(); }, {passive:false});
 viewer.addEventListener("touchend", e => {
   const dx = e.changedTouches[0].clientX - sx;
   const dy = e.changedTouches[0].clientY - sy;
-  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) dx > 0 ? next() : prev();
-}, {passive:true});
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) dx > 0 ? next() : prev();
+}, {passive:false});
 
 // キーボード（任意）
 document.addEventListener("keydown", e => {
