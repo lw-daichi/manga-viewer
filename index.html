@@ -44,6 +44,27 @@
   /* 中身はすべて背景の上に */
   #home, #viewer { position:relative; z-index:1; }
 
+  /* ---------- 月 ---------- */
+  #moon {
+    position:absolute; top:6vh; left:50%; transform:translateX(-50%);
+    width:clamp(90px,11vw,150px); aspect-ratio:1; border-radius:50%;
+    background:
+      radial-gradient(circle at 60% 35%, rgba(20,30,55,0.5) 0 6%, rgba(0,0,0,0) 7%),
+      radial-gradient(circle at 38% 60%, rgba(20,30,55,0.45) 0 5%, rgba(0,0,0,0) 6%),
+      radial-gradient(circle at 70% 70%, rgba(20,30,55,0.4) 0 4%, rgba(0,0,0,0) 5%),
+      radial-gradient(circle at 45% 30%, rgba(20,30,55,0.35) 0 3%, rgba(0,0,0,0) 4%),
+      radial-gradient(circle at 30% 35%, #eef3ff 0%, #c9d6f0 55%, #9fb2d8 100%);
+    box-shadow:
+      0 0 40px rgba(160,190,245,0.35),
+      0 0 90px rgba(120,150,220,0.25),
+      inset -10px -12px 30px rgba(40,55,95,0.45);
+    animation:moonglow 6s ease-in-out infinite;
+  }
+  @keyframes moonglow {
+    0%,100% { box-shadow:0 0 40px rgba(160,190,245,0.35),0 0 90px rgba(120,150,220,0.25),inset -10px -12px 30px rgba(40,55,95,0.45); }
+    50%     { box-shadow:0 0 55px rgba(170,200,255,0.5), 0 0 120px rgba(130,160,230,0.35),inset -10px -12px 30px rgba(40,55,95,0.45); }
+  }
+
   /* ---------- ホーム ---------- */
   #home {
     height:100%; display:flex; flex-direction:column;
@@ -170,7 +191,7 @@
 </head>
 <body>
 <div id="app">
-  <div id="space"><div class="stars" id="stars"></div></div>
+  <div id="space"><div class="stars" id="stars"></div><div id="moon"></div></div>
   <div id="home">
     <p class="eyebrow">EXHIBITION</p>
     <h1>ムーンショット目標を起点としたSFショート漫画</h1>
@@ -251,16 +272,56 @@ function render() {
   pageImg.src = src(m, idx + 1);
   counter.textContent = `${idx + 1} / ${m.pages}`;
 }
-// ----- 効果音：テレポート・シマー（Web Audioで生成・オフライン対応） -----
-let actx = null;
+// ----- 効果音：テレポート・シマー＋エコー（Web Audioで生成・オフライン対応） -----
+let actx = null, reverbBuf = null;
+
+// 簡易リバーブ用インパルス応答を生成（指数減衰ノイズ）
+function makeReverb(ctx, seconds, decay) {
+  const rate = ctx.sampleRate;
+  const len = rate * seconds;
+  const buf = ctx.createBuffer(2, len, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+    }
+  }
+  return buf;
+}
+
 function playOpenSound() {
   try {
     actx = actx || new (window.AudioContext || window.webkitAudioContext)();
     if (actx.state === "suspended") actx.resume();
     const t = actx.currentTime;
+
     const master = actx.createGain();
     master.gain.value = 0.9;
-    master.connect(actx.destination);
+
+    // ドライ（原音）
+    const dry = actx.createGain();
+    dry.gain.value = 0.7;
+    master.connect(dry); dry.connect(actx.destination);
+
+    // リバーブ（広がる残響）
+    reverbBuf = reverbBuf || makeReverb(actx, 2.6, 3.0);
+    const conv = actx.createConvolver();
+    conv.buffer = reverbBuf;
+    const wet = actx.createGain();
+    wet.gain.value = 0.55;
+    master.connect(conv); conv.connect(wet); wet.connect(actx.destination);
+
+    // ディレイ（やまびこ：フィードバックで繰り返す）
+    const delay = actx.createDelay(1.0);
+    delay.delayTime.value = 0.22;
+    const fb = actx.createGain();
+    fb.gain.value = 0.4;
+    const delayWet = actx.createGain();
+    delayWet.gain.value = 0.35;
+    master.connect(delay);
+    delay.connect(fb); fb.connect(delay);       // フィードバックループ
+    delay.connect(delayWet); delayWet.connect(actx.destination);
+    delay.connect(conv);                         // ディレイ音もリバーブへ
 
     // 1) 揺らぐ倍音ベッド（ビブラートで「シマー」感）
     const partials = [660, 990, 1320, 1760, 2640];
