@@ -251,25 +251,57 @@ function render() {
   pageImg.src = src(m, idx + 1);
   counter.textContent = `${idx + 1} / ${m.pages}`;
 }
-// ----- 効果音（Web Audioで生成・オフライン対応） -----
+// ----- 効果音：テレポート・シマー（Web Audioで生成・オフライン対応） -----
 let actx = null;
 function playOpenSound() {
   try {
     actx = actx || new (window.AudioContext || window.webkitAudioContext)();
     if (actx.state === "suspended") actx.resume();
     const t = actx.currentTime;
-    // 軽やかな上昇する2音
-    [880, 1320].forEach((freq, i) => {
+    const master = actx.createGain();
+    master.gain.value = 0.9;
+    master.connect(actx.destination);
+
+    // 1) 揺らぐ倍音ベッド（ビブラートで「シマー」感）
+    const partials = [660, 990, 1320, 1760, 2640];
+    partials.forEach((freq, i) => {
       const o = actx.createOscillator();
       const g = actx.createGain();
       o.type = "sine";
-      o.frequency.value = freq;
-      o.connect(g); g.connect(actx.destination);
-      const s = t + i * 0.08;
+      o.frequency.setValueAtTime(freq, t);
+      // 上方向へわずかに上昇させ、浮遊・転送感を出す
+      o.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.7);
+
+      // ビブラート（音を揺らがせる）
+      const lfo = actx.createOscillator();
+      const lfoG = actx.createGain();
+      lfo.frequency.value = 7 + i * 1.5;
+      lfoG.gain.value = freq * 0.012;
+      lfo.connect(lfoG); lfoG.connect(o.frequency);
+      lfo.start(t); lfo.stop(t + 0.9);
+
+      const vol = 0.16 / (i + 1);   // 高い倍音ほど控えめ
+      const s = t + i * 0.04;
       g.gain.setValueAtTime(0, s);
-      g.gain.linearRampToValueAtTime(0.25, s + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.001, s + 0.18);
-      o.start(s); o.stop(s + 0.2);
+      g.gain.linearRampToValueAtTime(vol, s + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.75);
+      o.connect(g); g.connect(master);
+      o.start(s); o.stop(t + 0.8);
+    });
+
+    // 2) きらめきの粒（上昇する短い高音をパラパラと）
+    const sparkles = [1568, 2093, 2637, 3136, 3520, 4186];
+    sparkles.forEach((freq, i) => {
+      const o = actx.createOscillator();
+      const g = actx.createGain();
+      o.type = "triangle";
+      o.frequency.value = freq;
+      const s = t + 0.05 + i * 0.06;
+      g.gain.setValueAtTime(0, s);
+      g.gain.linearRampToValueAtTime(0.12, s + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.001, s + 0.15);
+      o.connect(g); g.connect(master);
+      o.start(s); o.stop(s + 0.16);
     });
   } catch (e) {}
 }
