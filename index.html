@@ -44,26 +44,6 @@
   /* 中身はすべて背景の上に */
   #home, #viewer { position:relative; z-index:1; }
 
-  /* ---------- 月 ---------- */
-  #moon {
-    position:absolute; top:6vh; left:50%; transform:translateX(-50%);
-    width:clamp(90px,11vw,150px); aspect-ratio:1; border-radius:50%;
-    background:
-      radial-gradient(circle at 60% 35%, rgba(20,30,55,0.5) 0 6%, rgba(0,0,0,0) 7%),
-      radial-gradient(circle at 38% 60%, rgba(20,30,55,0.45) 0 5%, rgba(0,0,0,0) 6%),
-      radial-gradient(circle at 70% 70%, rgba(20,30,55,0.4) 0 4%, rgba(0,0,0,0) 5%),
-      radial-gradient(circle at 45% 30%, rgba(20,30,55,0.35) 0 3%, rgba(0,0,0,0) 4%),
-      radial-gradient(circle at 30% 35%, #eef3ff 0%, #c9d6f0 55%, #9fb2d8 100%);
-    box-shadow:
-      0 0 40px rgba(160,190,245,0.35),
-      0 0 90px rgba(120,150,220,0.25),
-      inset -10px -12px 30px rgba(40,55,95,0.45);
-    animation:moonglow 6s ease-in-out infinite;
-  }
-  @keyframes moonglow {
-    0%,100% { box-shadow:0 0 40px rgba(160,190,245,0.35),0 0 90px rgba(120,150,220,0.25),inset -10px -12px 30px rgba(40,55,95,0.45); }
-    50%     { box-shadow:0 0 55px rgba(170,200,255,0.5), 0 0 120px rgba(130,160,230,0.35),inset -10px -12px 30px rgba(40,55,95,0.45); }
-  }
 
   /* ---------- ホーム ---------- */
   #home {
@@ -191,7 +171,7 @@
 </head>
 <body>
 <div id="app">
-  <div id="space"><div class="stars" id="stars"></div><div id="moon"></div></div>
+  <div id="space"><div class="stars" id="stars"></div></div>
   <div id="home">
     <p class="eyebrow">EXHIBITION</p>
     <h1>ムーンショット目標を起点としたSFショート漫画</h1>
