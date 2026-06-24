@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Manga Viewer</title>
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GNWYLJWZJ6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-GNWYLJWZJ6');
+</script>
 <style>
   /* ============================================================
      設定欄：ここだけ書き換えてください
@@ -44,7 +52,6 @@
   /* 中身はすべて背景の上に */
   #home, #viewer { position:relative; z-index:1; }
 
-
   /* ---------- ホーム ---------- */
   #home {
     height:100%; display:flex; flex-direction:column;
@@ -70,8 +77,22 @@
     -webkit-text-fill-color:initial;
   }
   #home .sub {
-    text-align:center; font-size:clamp(13px,1.5vw,18px); font-weight:300;
-    letter-spacing:0.25em; opacity:0.5; margin-bottom:2vh;
+    align-self:center; text-align:center;
+    font-size:clamp(15px,1.9vw,22px); font-weight:600;
+    letter-spacing:0.12em; color:#eaf2ff; opacity:1;
+    margin-bottom:3vh; padding:10px 26px; border-radius:30px;
+    background:linear-gradient(135deg, rgba(90,130,210,0.35), rgba(120,90,200,0.35));
+    border:1px solid rgba(160,190,255,0.5);
+    box-shadow:0 0 24px rgba(120,160,240,0.35);
+    animation:subpulse 2.6s ease-in-out infinite;
+  }
+  #home .sub b {
+    color:#ffe27a; font-weight:700; font-size:1.15em;
+    text-shadow:0 0 14px rgba(255,210,90,0.5);
+  }
+  @keyframes subpulse {
+    0%,100% { box-shadow:0 0 24px rgba(120,160,240,0.35); transform:scale(1); }
+    50%     { box-shadow:0 0 40px rgba(140,180,255,0.6); transform:scale(1.04); }
   }
   .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3vw; }
   .card {
@@ -175,7 +196,7 @@
   <div id="home">
     <p class="eyebrow">EXHIBITION</p>
     <h1>ムーンショット目標を起点としたSFショート漫画</h1>
-    <p class="sub">3作品を公開中 — 読みたい作品をタップ</p>
+    <p class="sub">1作品 <b>たった2分</b> で読めます</p>
     <div class="grid" id="grid"></div>
   </div>
 
@@ -350,6 +371,13 @@ function playOpenSound() {
 function open(i) {
   playOpenSound();
   cur = i; idx = 0;
+  // GA: どの漫画が開かれたか記録
+  if (typeof gtag === "function") {
+    gtag('event', 'manga_open', {
+      manga_title: MANGA[i].title,
+      manga_folder: MANGA[i].folder
+    });
+  }
   // プリロード
   MANGA[i].pages > 1 && (new Image().src = src(MANGA[i], 2));
   viewer.classList.add("on");
