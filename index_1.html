@@ -52,42 +52,6 @@
   /* 中身はすべて背景の上に */
   #home, #viewer { position:relative; z-index:1; }
 
-  /* ---------- 飛ぶQRバナー ---------- */
-  #floaters { position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden; }
-  .floater {
-    position:absolute; display:flex; flex-direction:column; align-items:center; gap:6px;
-    will-change:transform;
-  }
-  .floater .qrbox {
-    background:#fff; padding:8px; border-radius:10px;
-    box-shadow:0 0 20px rgba(150,190,255,0.4);
-  }
-  .floater .qrbox img { width:74px; height:74px; display:block; }
-  .floater .cap {
-    font-size:14px; font-weight:600; letter-spacing:0.08em; color:#eaf2ff;
-    text-shadow:0 1px 6px rgba(0,0,0,0.8);
-    background:rgba(40,55,95,0.6); padding:3px 12px; border-radius:14px;
-  }
-  /* 漂う動き（3つで方向・速度を変える） */
-  .f1 { animation:drift1 14s ease-in-out infinite; }
-  .f2 { animation:drift2 17s ease-in-out infinite; }
-  .f3 { animation:drift3 16s ease-in-out infinite; }
-  @keyframes drift1 {
-    0%   { transform:translate(8vw, 6vh)  rotate(-4deg); }
-    50%  { transform:translate(16vw, 12vh) rotate(4deg); }
-    100% { transform:translate(8vw, 6vh)  rotate(-4deg); }
-  }
-  @keyframes drift2 {
-    0%   { transform:translate(64vw, 8vh)  rotate(3deg); }
-    50%  { transform:translate(56vw, 16vh) rotate(-5deg); }
-    100% { transform:translate(64vw, 8vh)  rotate(3deg); }
-  }
-  @keyframes drift3 {
-    0%   { transform:translate(20vw, 80vh) rotate(5deg); }
-    50%  { transform:translate(70vw, 74vh) rotate(-3deg); }
-    100% { transform:translate(20vw, 80vh) rotate(5deg); }
-  }
-
   /* ---------- ホーム ---------- */
   #home {
     height:100%; display:flex; flex-direction:column;
@@ -195,7 +159,6 @@
   }
   #viewer.on { display:flex; }
   body:has(#viewer.on) .star { animation-play-state:paused; }
-  body:has(#viewer.on) #floaters { display:none; }
   #page { max-width:100%; max-height:100%; object-fit:contain; display:block; pointer-events:none; }
 
   .tapzone { position:absolute; top:0; bottom:0; width:35%; z-index:5; }
@@ -230,20 +193,6 @@
 <body>
 <div id="app">
   <div id="space"><div class="stars" id="stars"></div></div>
-  <div id="floaters">
-    <div class="floater f1">
-      <div class="qrbox"><img alt="QR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQMAAAAEm3vRAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABqklEQVRYhe2YQbKEIAxEw4pjcFOBm3IMVvKTDohj/QO0VVLWDPqYRSbpJijyjW+wjDh0nLGJJPuMLXfJ9qzRY/s6Ygv6pKfaU9Hb9Zwc59GOOEpshyhLNoke6juw5yMMj/M92CvpsZoez0hwpxo4LDfPWqPEU8DH7fpH34R4jazq1XWSnoAWm3QtH9CwuY/OQ087bmrcQtdZGt1qSOdWUrfAaPFwxWo8KyW+gh1bAgwUuHwdMzFF6DFCyhaM+qaBAQ+tVzERYw1J4O+6onhbc+WDG5+4BtoazQc6G0iCHZu5FzdNXAC7mLixpUGggVlMlqTGjsWNMp3LNOGYN31zY69713BFr3BXAim2mbfsZpqwSwuyCD0Wrx7T7bmag3sx8WK0vAFpsFMH4rxvVLwYu9RsfNHNZMS2a40Y49/3ozU+49hRMeOrIVimWbFn1U6P1yKYJqKKVlKBH/thD69gvKEU7ylfgJvAaw68jkExtdml0eP8a5oFR5GwNypuLN4irOZga/gFOFhRXemZb2fIsT/K0y6Tq0JegCFgnD38gDqPefgZNf7GNxjGH2+FfeYFWZNQAAAAAElFTkSuQmCC"></div>
-      <div class="cap">読めるかな？</div>
-    </div>
-    <div class="floater f2">
-      <div class="qrbox"><img alt="QR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQMAAAAEm3vRAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABoElEQVRYhe2YQY7EIAwEzYln8FMgP80zcsLrbkMS7WrvRooVZSYUF4/djSciX3wRJbJaDCl62YXHLtKwdobH+KgiSc90SSWuaz04bnpWJGbs/qJjF2z3i5W4yoHHnbAtWUrJWmofzGYqw6/MrfK710JiCthX1/VH3yHxjNIp3f8iIsYqHHMwnzHrcW8NjAV9D7uEy59mnY1KMD1Hx3kuHXNT6bB+PTbA+PUNNF78UmZhgmMKAM3EIwqVoI2mJeC4GCXRDn93u0diVo8NsLgAOJOtfT2jsaJjjAVWFR6rfPRBwe7R8czKAc4ne3Qxh8dmOtqXjL2ZOhbP6DgjDdoNZNDcLq0eeQPMqRGi5Rw8Z5rHUwPjLjOrNIeD8mqm4Jj3rO6V6S5MdIymeUxzFmkP7L9+pR6wFSMOzSg6Vv5T0oNZ0ehV380UFq/06jRNHFqSb+sJjOefPT+cMAG39aYgPEYC9VavD5GvGTkybrrqQdNkqk9J4uP1OobDwRLzFjitklTZBnsz+dTOHoLvP54aF08Bj/VSw1rKaxMdf/FFhPgBuwrCmOPpnvMAAAAASUVORK5CYII="></div>
-      <div class="cap">読めるかな？</div>
-    </div>
-    <div class="floater f3">
-      <div class="qrbox"><img alt="QR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQMAAAAEm3vRAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABqklEQVRYhe2Y0Q3DIAxEnS/GYNNAN2UMvnB9Z6CRuoCRYkUpyctHLezjQOSNN6JEUouRtIpcqp+etUvBuxYe4+fmsPRcJX+03et9cFzsOTXLylK6kZ49WqqnYJsMe8hjPR6ElfOhnI9TMIsp17TTk/9aC4m9gVFP+/rv74h4RjbRGbijDeQvIuLEvk0NPQDd0Zpw7WKKiwXVXyn3FldHhjYuGh7/EmMzTNFsZ2Abudyr3XFB9LuEx81W1kHRudjJhRbBZyg0Rt24m0EZ6ZJ+7eExEltyD2eDd1efRic05oJqzKrKrBg8GcbtCOxpXFPoIZ0jPRaqsNg9AVXe7S8+etqasBgxHeQvMa610TES4EJluokeRkswzxYdkw3KfX2A3QZxcWq8sFMdzI1yiS1fdEwrM2YnuIMHKwfgvDcb19qmelVFxyyjtfGYVaXPLgmL5//3VYpGwUVTJDr2zd48i+FZEk2wHIAxMqH0s5jtidcXoTEONebRQKPozFTPwKyess0BF91TcPVZ4Q5kL2LBscAHc+PEiVk93MJjlg4TI5777W0O4uI33ogQXwcyVuANzKAeAAAAAElFTkSuQmCC"></div>
-      <div class="cap">読めるかな？</div>
-    </div>
-  </div>
   <div id="home">
     <p class="eyebrow">EXHIBITION</p>
     <h1>ムーンショット目標を起点としたSFショート漫画</h1>
